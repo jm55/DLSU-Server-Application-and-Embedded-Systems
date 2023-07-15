@@ -40,7 +40,7 @@ def handle_client(conn, addr):
     connected = True
     while connected:
         msg_length = conn.recv(HEADER).decode(FORMAT)
-        if msg_length:
+        if len(msg_length) >= 3: 
             try:
                 msg_length = int(msg_length)
                 msg = conn.recv(msg_length).decode(FORMAT)

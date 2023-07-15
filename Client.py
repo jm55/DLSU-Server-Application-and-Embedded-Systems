@@ -19,13 +19,13 @@ rfid_tag_size = 100
 rfid_tags = []
 time_limit = 10
 
-def random_id():
+def random_id(): #For Simulator Only
     return rfid_tags[random.randint(0,rfid_tag_size-1)]
 
-def random_time(timelimit):
+def random_time(timelimit): #For Simulator Only
     return random.randint(0,timelimit)
 
-def tag_generator():
+def tag_generator(): #For Simulator Only
     for i in range(rfid_tag_size):
         rfid_tags.append("%032x" % random.getrandbits(128))        
 
@@ -60,11 +60,12 @@ def send(msg):
     server_reply = client.recv(2048).decode(FORMAT)
     return server_reply #Replies from server
 
-def client_worker(thread_id):
+def client_worker(thread_id): #For Simulator Only
     while True:
         complete = False
         while not complete: #Will retry if the tap register failed
             id = random_id()
+            time.sleep(1)
             ret = send(id)
             if ret != "ERROR":
                 complete = True

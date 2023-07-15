@@ -12,10 +12,12 @@ DISCONNECT_MESSAGE = "!DISCONNECT"
 IP = ""
 PORT = 8080
 ADDR = ("", 0)
+QUIET = False
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+lock = threading.Lock()
 
-rfid_tag_size = 100
+rfid_tag_size = 1000
 rfid_tags = []
 time_limit = 10
 
@@ -52,32 +54,33 @@ def setup_client():
     
 def send(msg):
     message = msg.encode(FORMAT)
-    msg_length = len(message)
-    send_length = str(msg_length).encode(FORMAT)
-    send_length += b' ' * (HEADER - len(send_length))
-    client.send(send_length)
+    #msg_length = len(message)
+    #send_length = str(msg_length).encode(FORMAT)
+    #end_length += b' ' * (HEADER - len(send_length))
+    #client.send(send_length)
     client.send(message)
     server_reply = client.recv(2048).decode(FORMAT)
     return server_reply #Replies from server
 
 def client_worker(thread_id): #For Simulator Only
+    global QUIET
     while True:
-        complete = False
-        while not complete: #Will retry if the tap register failed
-            id = random_id()
-            time.sleep(1)
-            ret = send(id)
-            if ret != "ERROR":
-                complete = True
-            print(f"{datetime.datetime.now()} [Thread ID {thread_id}] | Tapped: {id} - {ret}")
-        time.sleep(random_time(time_limit)) #arbitrary sleep to simulate delay to next possible tap of same id
+        id = random_id()
+        start = time.time()
+        ret = send(id)
+        if not QUIET:
+            print(f"{str(datetime.datetime.now()):26s} [Thread ID {str(thread_id):4s}] | Tapped: {id:32s} - {ret:5s} ({round(time.time()-start,2)}ms)")
+        #time.sleep(random_time(time_limit)) #arbitrary sleep to simulate delay to next possible tap of same id
+
 
 def main():
+    global QUIET
     tag_generator()
     print(rfid_tags)
     setup_client()
-    header()
     threads = int(input("Enter no. of threads: "))
+    if input("Quiet Mode (Y/N): ") == "Y":
+        QUIET = True
     for t in range(threads):
         thread = threading.Thread(target=client_worker, args=([t]))
         thread.start()

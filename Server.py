@@ -4,6 +4,7 @@ import socket
 import threading
 import os, platform
 import time, datetime
+import re
 
 HEADER = 128
 FORMAT = 'utf-8'
@@ -11,8 +12,11 @@ DISCONNECT_MESSAGE = "!DISCONNECT"
 IP = ""
 PORT = 8080
 ADDR = ("", 0)
+QUIET = False
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+lock = threading.Lock()
+premises = [] #Will hold all IDs
 
 def cls():
     if platform.system() == "Linux":
@@ -30,24 +34,36 @@ def setup_server():
     global IP
     global PORT
     global ADDR
+    global QUIET
     header()
     IP = input("Enter Server IP: ")
     ADDR = (IP, PORT)
     server.bind(ADDR)
+    if input("Quiet Mode (Y/N): ") == "Y":
+        QUIET = True
+
+def load_memory():
+    return
 
 def handle_client(conn, addr):
     #print(f"[NEW CONNECTION] {addr} connected.")
     connected = True
     while connected:
-        msg_length = conn.recv(HEADER).decode(FORMAT)
-        if len(msg_length) >= 3: 
-            try:
-                msg_length = int(msg_length)
-                msg = conn.recv(msg_length).decode(FORMAT)
-                print(f"{datetime.datetime.now()} | [{addr[0]}]: {msg}")
-                conn.send("OK".encode(FORMAT)) #Reply to client
-            except:
-                conn.send("ERROR".encode(FORMAT)) #Reply to client
+        id = conn.recv(HEADER).decode(FORMAT)
+        
+        if len(id) > 32 or len(id) < 32:
+            conn.send("ERROR".encode(FORMAT)) #Reply to client
+        else:
+            if not QUIET:
+                print(f"{str(datetime.datetime.now()):26s} | [{addr[0]:15s}]: {id:32s} ({len(premises)}pax)")
+            lock.acquire()
+            if id not in premises:
+                premises.append(id)
+                conn.send("ENTER".encode(FORMAT)) #Reply to client
+            else:
+                premises.remove(id)
+                conn.send("EXIT".encode(FORMAT))
+            lock.release()
     conn.close()
 
 def start():

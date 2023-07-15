@@ -3,51 +3,66 @@
 import socket 
 import threading
 import os, platform
-import time
+import time, datetime
 
 HEADER = 128
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT"
 IP = ""
-PORT = 0
+PORT = 8080
 ADDR = ("", 0)
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(ADDR)
 
 def cls():
-    os.system("cls")
+    if platform.system() == "Linux":
+        os.system("clear")
+    elif platform.system() == "Windows":
+        os.system("cls")
 
-def header()
+def header():
+    cls()
+    print("Server.py")
+    print("Escalona, Estebal, Fortiz")
+    print("")
 
 def setup_server():
-    
+    global IP
+    global PORT
+    global ADDR
+    header()
+    IP = input("Enter Server IP: ")
+    ADDR = (IP, PORT)
+    server.bind(ADDR)
 
 def handle_client(conn, addr):
-    print(f"[NEW CONNECTION] {addr} connected.")
+    #print(f"[NEW CONNECTION] {addr} connected.")
     connected = True
     while connected:
         msg_length = conn.recv(HEADER).decode(FORMAT)
         if msg_length:
-            msg_length = int(msg_length)
-            msg = conn.recv(msg_length).decode(FORMAT)
-            if msg == DISCONNECT_MESSAGE:
-                connected = False
-            print(f"[{addr}] {msg}")
-            conn.send("Msg received".encode(FORMAT))
+            try:
+                msg_length = int(msg_length)
+                msg = conn.recv(msg_length).decode(FORMAT)
+                print(f"{datetime.datetime.now()} | [{addr[0]}]: {msg}")
+                conn.send("OK".encode(FORMAT)) #Reply to client
+            except:
+                conn.send("ERROR".encode(FORMAT)) #Reply to client
     conn.close()
 
 def start():
+    setup_server()
     server.listen()
-    print(f"[LISTENING] Server is listening on {SERVER}")
+    print(f"Server is LISTENING on {IP}:{PORT}...")
+    print("")
     while True:
         conn, addr = server.accept()
         thread = threading.Thread(target=handle_client, args=(conn, addr))
         thread.start()
-        print(f"[ACTIVE CONNECTIONS] {threading.activeCount() - 1}")
+        #print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
 
 def main():
-    print("[STARTING] server is starting...")
+    print("Server is STARTING...")
     start()
 
 if __name__ == "__main__":

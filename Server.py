@@ -52,17 +52,17 @@ def handle_client(conn, addr):
         id = conn.recv(HEADER).decode(FORMAT)
         if len(id) > 32 or len(id) < 32:
             print(id)
-            conn.send("ERROR\n".encode(FORMAT)) #Reply to client
+            conn.send("ERROR".encode(FORMAT)) #Reply to client
         else:
             if not QUIET:
                 print(f"{str(datetime.datetime.now()):26s} | [{addr[0]:15s}]: {id:32s} ({len(premises)}pax)")
             lock.acquire()
             if id not in premises:
                 premises.append(id)
-                conn.send("ENTER\n".encode(FORMAT)) #Reply to client
+                conn.send("ENTER".encode(FORMAT)) #Reply to client
             else:
                 premises.remove(id)
-                conn.send("EXIT\n".encode(FORMAT))
+                conn.send("EXIT".encode(FORMAT))
             lock.release()
     conn.close()
 

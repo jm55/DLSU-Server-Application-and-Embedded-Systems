@@ -70,10 +70,6 @@ def random_id():
 
 def send(msg):
     message = msg.encode(FORMAT)
-    #msg_length = len(message)
-    #send_length = str(msg_length).encode(FORMAT)
-    #end_length += b' ' * (HEADER - len(send_length))
-    #client.send(send_length)
     client.send(message)
     server_reply = client.recv(2048).decode(FORMAT)
     return server_reply #Replies from server

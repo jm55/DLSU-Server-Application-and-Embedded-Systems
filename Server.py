@@ -54,8 +54,7 @@ def handle_client(conn, addr):
             print(id)
             conn.send("ERROR".encode(FORMAT)) #Reply to client
         else:
-            if not QUIET:
-                print(f"{str(datetime.datetime.now()):26s} | [{addr[0]:15s}]: {id:32s} ({len(premises)}pax)")
+            enter = True
             lock.acquire()
             if id not in premises:
                 premises.append(id)
@@ -63,7 +62,13 @@ def handle_client(conn, addr):
             else:
                 premises.remove(id)
                 conn.send("EXIT".encode(FORMAT))
+                enter = False
             lock.release()
+            if not QUIET:
+                if enter:
+                    print(f"{str(datetime.datetime.now()):26s} | [{addr[0]:15s}]: {id:32s} ENTER ({len(premises)}pax)")
+                else:
+                    print(f"{str(datetime.datetime.now()):26s} | [{addr[0]:15s}]: {id:32s} EXIT ({len(premises)}pax)")
     conn.close()
 
 def start():

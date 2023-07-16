@@ -39,7 +39,7 @@ def setup_server():
     IP = input("Enter Server IP: ")
     ADDR = (IP, PORT)
     server.bind(ADDR)
-    if input("Quiet Mode (Y/N): ") == "Y":
+    if input("Quiet Mode (y/n): ").lower == "y":
         QUIET = True
 
 def load_memory():
@@ -50,19 +50,19 @@ def handle_client(conn, addr):
     connected = True
     while connected:
         id = conn.recv(HEADER).decode(FORMAT)
-        
         if len(id) > 32 or len(id) < 32:
-            conn.send("ERROR".encode(FORMAT)) #Reply to client
+            print(id)
+            conn.send("ERROR\n".encode(FORMAT)) #Reply to client
         else:
             if not QUIET:
                 print(f"{str(datetime.datetime.now()):26s} | [{addr[0]:15s}]: {id:32s} ({len(premises)}pax)")
             lock.acquire()
             if id not in premises:
                 premises.append(id)
-                conn.send("ENTER".encode(FORMAT)) #Reply to client
+                conn.send("ENTER\n".encode(FORMAT)) #Reply to client
             else:
                 premises.remove(id)
-                conn.send("EXIT".encode(FORMAT))
+                conn.send("EXIT\n".encode(FORMAT))
             lock.release()
     conn.close()
 

@@ -79,7 +79,7 @@ def main():
     print(rfid_tags)
     setup_client()
     threads = int(input("Enter no. of threads: "))
-    if input("Quiet Mode (Y/N): ") == "Y":
+    if input("Quiet Mode (Y/N): ").lower() == "y":
         QUIET = True
     for t in range(threads):
         thread = threading.Thread(target=client_worker, args=([t]))

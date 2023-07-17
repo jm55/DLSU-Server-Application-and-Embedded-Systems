@@ -1,10 +1,11 @@
 #Based from: https://morioh.com/p/1d5fd6c04b58
 
+import UI as ui
 import socket
-import platform, os
 import time, datetime
 import random
 import threading
+import re
 
 HEADER = 128
 FORMAT = 'utf-8'
@@ -21,18 +22,6 @@ RFID_SIZE = 1000
 RFID_LIST = []
 TIME_LIMIT = 10
 
-def cls():
-    if platform.system() == "Linux":
-        os.system("clear")
-    elif platform.system() == "Windows":
-        os.system("cls")
-
-def header():
-    cls()
-    print("Client.py")
-    print("Escalona, Estebal, Fortiz")
-    print("")
-
 def setup_client():
     global IP
     global PORT
@@ -44,13 +33,13 @@ def setup_client():
 def load_ids():
     global RFID_SIZE
     global RFID_LIST
-    if input("Use existing ID list? (y/n): ").lower() == 'y':
-        f = open(input("Input filename/file path: "), 'r')
+    if input("Use ID List? (Y/N): ").lower() == 'y':
+        f = open(input("Enter IDs File: "), 'r')
         while True:
             line = f.readline()
             if not line:
                 break
-            RFID_LIST.append(line)
+            RFID_LIST.append(re.sub("\n","",line))
         RFID_SIZE = len(RFID_LIST)
     else:
         RFID_SIZE = int(input("Enter no. of IDs to generate: "))
@@ -61,7 +50,7 @@ def load_ids():
                 if newID not in RFID_LIST:
                     RFID_LIST.append(newID)
                     valid = True
-    print(RFID_LIST)
+    print(f"DB: {RFID_SIZE} IDs")
 
 def random_id():
     global RFID_LIST
@@ -81,14 +70,14 @@ def client_worker(thread_id): #For Simulator Only
         start = time.time()
         ret = send(id)
         if not QUIET:
-            print(f"{str(datetime.datetime.now()):26s} [Thread ID {str(thread_id):4s}] | Tapped: {id:32s} - {ret:5s} ({round(time.time()-start,2)}ms)")
-        #time.sleep(random_time(time_limit)) #arbitrary sleep to simulate delay to next possible tap of same id
+            print(f"{str(datetime.datetime.now()):26s} | [Thread ID {str(thread_id):4s}]: {id:32s} - {ret:5s} ({round(time.time()-start,2)}ms)")
+        #time.sleep(random.randint(1,TIME_LIMIT)) #arbitrary sleep to simulate delay to next possible tap of same id
 
 def main():
     global QUIET
-    header()
-    load_ids()
+    ui.header("CLIENT")
     setup_client()
+    load_ids()
     threads = int(input("Enter no. of threads: "))
     if input("Quiet Mode (Y/N): ").lower() == "y":
         QUIET = True

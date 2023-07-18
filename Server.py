@@ -54,7 +54,7 @@ def handle_client(conn, addr):
         elif len(rcv) != 32 and "=" not in rcv:
             print("ERROR: ", rcv)
             response = "ERROR"
-        elif (len(rcv) < 32 or len(rcv) < 32+4) and "=" in rcv: #Admin Controls
+        elif (len(rcv) <= 32+4) and "=" in rcv: #Admin Controls
             if "ADD=" in rcv:
                 id = re.sub("ADD=","",rcv)
                 if id in dbMemory:
@@ -71,7 +71,7 @@ def handle_client(conn, addr):
                     response = "REMOVED"
             if "MON=" in rcv:
                 rcv = "MONITOR"
-                response = f"P:{len(premises)}/L:{LIMIT}/DB:{len(dbMemory)}"
+                response = f"P:{len(premises)}/L:{LIMIT}/DB:{len(dbMemory)}\n{round((len(premises)/LIMIT)*100,2)}% Full"
             if "LIM=" in rcv:
                 rcv = re.sub("LIM=","",rcv)
                 LIMIT = int(rcv)

@@ -49,26 +49,26 @@ def remove():
     print("ID:",id,response)
     ui.getch()
 
-monitor = False
+set_monitor = False
 def monitor_thread():
-    global monitor
-    while monitor:
+    global set_monitor
+    while set_monitor:
         ui.header("ADMIN")
         msg = f"MON="
         response = send(msg)
         print("P = Premises\nL = Limit\nDB = Database Mem.\n")
         print(f"Updated at {datetime.datetime.now()}")
         print(f"{response}")
-        print("Press Enter to return...")
+        print("\nPress Enter to return...")
         time.sleep(1)
 
 def monitor():
-    global monitor
+    global set_monitor
     mon_thread = threading.Thread(target=monitor_thread)
-    monitor = True
+    set_monitor = True
     mon_thread.start()
     input("")
-    monitor = False
+    set_monitor = False
     mon_thread.join()
     return
 
@@ -77,7 +77,7 @@ def search():
     id = input("Enter ID to search: ")
     msg = f"SER={id}"
     response = send(msg)
-    print(f"{response}")
+    print(f"ID: {response}")
     ui.getch()
 
 def setlim():
@@ -87,13 +87,13 @@ def setlim():
         ui.header("ADMIN")
         msg = f"MON="
         response = send(msg)
-        print(f"{response} people in premises")
+        print(f"{response} people in premises\n")
         limit = input("Set limit: ")
         if re.match("^[-+]?[0-9]+$",limit):
             valid = True
     msg = f"LIM={limit}"
     response = send(msg)
-    print(f"{response}")
+    print(f"\n{response}")
     ui.getch()
 
 def menu():

@@ -28,7 +28,6 @@ def setup_client():
     global ADDR
     IP = input("Enter Target Server IP: ")
     ADDR = (IP, PORT)
-    client.connect(ADDR)
 
 def load_ids():
     global RFID_SIZE
@@ -81,6 +80,7 @@ def main():
     threads = int(input("Enter no. of threads: "))
     if input("Quiet Mode (Y/N): ").lower() == "y":
         QUIET = True
+    client.connect(ADDR)
     for t in range(threads):
         thread = threading.Thread(target=client_worker, args=([t]))
         thread.start()

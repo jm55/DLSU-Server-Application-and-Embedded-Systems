@@ -39,6 +39,9 @@ def load_memory():
             dbMemory.append(re.sub("\n","",line))
     return
 
+def update_db():
+    return
+
 def handle_client(conn, addr):
     global LIMIT
     connected = True
@@ -54,12 +57,18 @@ def handle_client(conn, addr):
         elif (len(rcv) < 32 or len(rcv) < 32+4) and "=" in rcv: #Admin Controls
             if "ADD=" in rcv:
                 id = re.sub("ADD=","",rcv)
-                dbMemory.append(id)
-                response = "ADD"
+                if id in dbMemory:
+                    response = "!ADDED"
+                else:
+                    dbMemory.append(id)
+                    response = "ADDED"
             if "REM=" in rcv:
                 id = re.sub("REM=","",rcv)
-                dbMemory.remove(id)
-                response = "ADD"
+                if id not in dbMemory:
+                    response = "!REMOVED"
+                else:
+                    dbMemory.remove(id)
+                    response = "REMOVED"
             if "MON=" in rcv:
                 rcv = "MONITOR"
                 response = f"P:{len(premises)}/L:{LIMIT}/DB:{len(dbMemory)}"
@@ -105,7 +114,6 @@ def start():
         conn, addr = server.accept()
         thread = threading.Thread(target=handle_client, args=(conn, addr))
         thread.start()
-        #print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
 
 def main():
     print("Server is STARTING...")

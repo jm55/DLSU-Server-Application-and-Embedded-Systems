@@ -3,6 +3,8 @@
 import UI as ui
 import socket
 import re
+import time, datetime
+import threading
 
 HEADER = 128
 FORMAT = 'utf-8'
@@ -47,13 +49,28 @@ def remove():
     print("ID:",id,response)
     ui.getch()
 
+monitor = False
+def monitor_thread():
+    global monitor
+    while monitor:
+        ui.header("ADMIN")
+        msg = f"MON="
+        response = send(msg)
+        print("P = Premises\nL = Limit\nDB = Database Mem.\n")
+        print(f"Updated at {datetime.datetime.now()}")
+        print(f"{response}")
+        print("Press Enter to return...")
+        time.sleep(1)
+
 def monitor():
-    ui.header("ADMIN")
-    msg = f"MON="
-    response = send(msg)
-    print("P = Premises\nL = Limit\nDB = Database Mem.")
-    print(f"{response}")
-    ui.getch()
+    global monitor
+    mon_thread = threading.Thread(target=monitor_thread)
+    monitor = True
+    mon_thread.start()
+    input("")
+    monitor = False
+    mon_thread.join()
+    return
 
 def search():
     ui.header("ADMIN")

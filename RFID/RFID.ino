@@ -34,8 +34,14 @@ void rfid_simulator(WiFiClient client){
     }else if(rcv_str == "EXIT"){ //EXIT
       Serial.println(id + ": EXIT");
       rcv_str = "";
-    }else if(rcv_str == "ERROR"){ //Error
+    }else if(rcv_str == "ERROR"){ //LIMIT
       Serial.println(id + ": ERROR, TRY AGAIN");
+      rcv_str = "";
+    }else if(rcv_str == "LIMIT"){ //LIMIT
+      Serial.println(id + ": LIMIT REACHED, TRY AGAIN LATER");
+      rcv_str = "";
+    }else if(rcv_str == "INVALID"){ //INVALID
+      Serial.println(id + ": INVALID ID");
       rcv_str = "";
     }
   }

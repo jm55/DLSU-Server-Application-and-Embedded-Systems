@@ -106,11 +106,11 @@ def handle_client(conn, addr):
             if rcv == DISCONNECT_MESSAGE:
                 connected = False
             elif not ("{" in rcv and "}" in rcv):
-                response = jparser.writejson("SERV","ERR","ERROR")
+                response = jparser.errjson("SERV")
             else: 
                 parsed = jparser.readjson(rcv)
                 if parsed == None:
-                    response = jparser.writejson("SERV","ERR","ERROR")
+                    response = jparser.errjson("SERV")
                 else:
                     parsedcmd = parsed['cmd']
                     parsedval = parsed['val']
@@ -136,7 +136,7 @@ def handle_client(conn, addr):
         except Exception as e:
             print("EXCEPTION:", rcv)
             print(e.with_traceback)
-            response = jparser.writejson("SERV","ERR","ERROR")
+            response = jparser.errjson("SERV")
         conn.send(response.encode(FORMAT))
         lock.release()
     conn.close()

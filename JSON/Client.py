@@ -92,6 +92,7 @@ def main():
     for t in range(threads):
         thread = threading.Thread(target=client_worker, args=([t]))
         thread.start()
+        #add delay
 
 if __name__ == "__main__":
     main()

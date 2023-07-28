@@ -133,13 +133,21 @@ def handle_client(conn, addr):
                     print(f"{str(datetime.datetime.now()):26s} | [{addr[0]:15s}]: {parsedval:32s} - {parsedresponse:7s} ({len(premises)}/{LIMIT})")
                 else:
                     print(f"{str(datetime.datetime.now()):26s} | [{addr[0]:15s}]: {parsedcmd:3s} - {parsedresponse:7s} ({len(premises)}/{LIMIT})")
+            conn.send(response.encode(FORMAT))
+            lock.release()
         except Exception as e:
+            print("------------------------------")
             print("EXCEPTION:", rcv)
-            print(e.with_traceback)
+            print("Traceback:", e.with_traceback)
+            print("Client:", addr)
+            print("------------------------------")
             response = jparser.errjson("SERV")
-        conn.send(response.encode(FORMAT))
-        lock.release()
+            connected = False
+            conn.close()
+            lock.release()
+            break
     conn.close()
+    return
 
 def start():
     setup_server()

@@ -9,6 +9,7 @@ import re
 import JSONParser as jparser
 
 FILE = ""
+LASTUPDATE = 0
 HEADER = 128
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT"
@@ -18,14 +19,15 @@ ADDR = ("", 0)
 QUIET = False
 LIMIT = 1000
 DEFAULTLIMIT = 1000
+UPDATE_CYCLE = 30 #in seconds
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-lock = threading.Lock()
+lock = threading.Semaphore(200)
 dbMemory = [] #Will hold all IDs Registered IDs; Acts as database
 premises = [] #Will hold all IDs in Premises
 
 def setup_server():
-    global IP,PORT,ADDR,QUIET,FILE
+    global IP,PORT,ADDR,QUIET
     ui.header("SERVER")
     IP = input("Enter Server IP: ")
     ADDR = (IP, PORT)
@@ -34,14 +36,13 @@ def setup_server():
         QUIET = True
 
 def load_memory():
+    global FILE
     FILE = input("Enter IDs File: ")
     with open(FILE, 'r') as f:
         lines = f.readlines()
         for line in lines:
             dbMemory.append(re.sub("\n","",line))
-    return
-
-def update_db():
+        f.close()
     return
 
 def add_user(id:str):
@@ -94,6 +95,7 @@ def setlimit(limit):
         return "ERROR OCCURED, CURR VAL RETAINED"
 
 def handle_client(conn, addr):
+    global QUIET
     connected = True
     while connected:
         response = ""
@@ -106,11 +108,11 @@ def handle_client(conn, addr):
             if rcv == DISCONNECT_MESSAGE:
                 connected = False
             elif not ("{" in rcv and "}" in rcv):
-                response = jparser.errjson("SERV")
+                response = jparser.errjson("SERV","Malformed RCV")
             else: 
                 parsed = jparser.readjson(rcv)
                 if parsed == None:
-                    response = jparser.errjson("SERV")
+                    response = jparser.errjson("SERV","Unparseable RCV")
                 else:
                     parsedcmd = parsed['cmd']
                     parsedval = parsed['val']
@@ -128,35 +130,53 @@ def handle_client(conn, addr):
                         response = jparser.writejson("SERV", "RES", search_user(parsedval))
                     #print(response)
             if not QUIET and "DISCONNECT" not in rcv:
-                parsedresponse = jparser.readjson(response)["val"]
-                if parsedcmd == "TAP":
-                    print(f"{str(datetime.datetime.now()):26s} | [{addr[0]:15s}]: {parsedval:32s} - {parsedresponse:7s} ({len(premises)}/{LIMIT})")
-                else:
-                    print(f"{str(datetime.datetime.now()):26s} | [{addr[0]:15s}]: {parsedcmd:3s} - {parsedresponse:7s} ({len(premises)}/{LIMIT})")
+                ui.standardPrint(addr, parsedcmd, parsedval, jparser.readjson(response)["val"], f"({len(premises)}/{LIMIT})")
             conn.send(response.encode(FORMAT))
-            lock.release()
         except Exception as e:
-            print("------------------------------")
-            print("EXCEPTION:", rcv)
-            print("Traceback:", e.with_traceback)
-            print("Client:", addr)
-            print("------------------------------")
-            response = jparser.errjson("SERV")
-            connected = False
+            ui.exception(rcv, e, addr)
+            response = jparser.errjson("SERV","SRV Exception")
             conn.close()
             lock.release()
-            break
+            return
+        lock.release()
     conn.close()
     return
+
+def update_db():
+    global LASTUPDATE
+    global FILE
+    global RUNNING
+    LASTUPDATE = time.time()
+    while True:
+        if time.time() - LASTUPDATE >= UPDATE_CYCLE:
+            ui.standardPrint("localhost", "UDB", "Updating DB File...", "ONGOING", "")
+            try:
+                lock.acquire()
+                f = open(FILE, mode="w")
+                for id in dbMemory:
+                    f.write(id + "\n")
+                f.flush()
+                f.close()
+                lock.release()
+                ui.standardPrint("localhost", "UDB", "DB File Updated!", "OK", "")
+            except Exception as fileExcept:
+                ui.standardPrint("localhost", "UDB", "DB File Update Failed!", "NOT OK", "")
+                ui.exception("updateDB", fileExcept, "localhost")
+                continue
+            LASTUPDATE = time.time()
 
 def start():
     setup_server()
     load_memory()
+    print("FILE:", FILE)
     server.listen()
     print("")
+    print(f"DB Updates every {UPDATE_CYCLE} seconds.")
     print(f"DB Memory: {len(dbMemory)} IDs")
     print(f"Server is LISTENING on {IP}:{PORT}...")
     print("")
+    dbThread = threading.Thread(target=update_db)
+    dbThread.start()
     while True:
         conn, addr = server.accept()
         thread = threading.Thread(target=handle_client, args=(conn, addr))

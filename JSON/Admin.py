@@ -18,26 +18,46 @@ RFID_SIZE = 1000
 RFID_LIST = []
 TIME_LIMIT = 10
 
+lock = None
+
+MERGED = 0
+
 def setup_client():
     global IP, PORT, ADDR
     IP = input("Enter Target Server IP: ")
     ADDR = (IP, PORT)
 
 def send(msg):
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(ADDR)
-    message = msg.encode(FORMAT)
-    client.send(message)
-    server_reply = client.recv(2048).decode(FORMAT)
-    client.send(DISCONNECT_MESSAGE.encode(FORMAT))
+    completed = False
+    server_reply = ""
+    while not completed:
+        try:
+            client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client.connect(ADDR)
+            message = msg.encode(FORMAT)
+            client.send(message)
+            server_reply = client.recv(2048).decode(FORMAT)
+            client.send(DISCONNECT_MESSAGE.encode(FORMAT))
+            completed = True
+        except Exception as e:
+            #ui.exception("Admin Send", e, ADDR[0])
+            time.sleep(1/1000)
+            continue
     return server_reply #Replies from server
+
+def add_service(id, printable:bool):
+    id = re.sub("\n", "", id)
+    msg = jparser.writejson("ADMIN","ADD",id)
+    response = send(msg)
+    if printable:
+        print(f"ID: {id} - {jparser.cleanresponse(response)}")
+
+    return jparser.cleanresponse(response)
 
 def add():
     ui.header("ADMIN")
     id = input("Enter ID to ADD: ")
-    msg = jparser.writejson("ADMIN","ADD",id)
-    response = send(msg)
-    parsedval = jparser.cleanresponse(response)
+    parsedval = add_service(id, False)
     ui.header("ADMIN")
     print("ID:",id,parsedval)
     ui.getch()
@@ -52,17 +72,20 @@ def remove():
     print("ID:",id,parsedval)
     ui.getch()
 
+def monitor_request():
+    msg = jparser.writejson("ADMIN","MON","_")
+    response = send(msg)
+    parsedval = jparser.cleanresponse(response)
+    print("P = Premises\nL = Limit\nDB = Database Mem.\n")
+    print(f"Updated at {datetime.datetime.now()}")
+    print(f"{parsedval}")
+
 set_monitor = False
 def monitor_thread():
     global set_monitor
     while set_monitor:
         ui.header("ADMIN")
-        msg = jparser.writejson("ADMIN","MON","_")
-        response = send(msg)
-        parsedval = jparser.cleanresponse(response)
-        print("P = Premises\nL = Limit\nDB = Database Mem.\n")
-        print(f"Updated at {datetime.datetime.now()}")
-        print(f"{parsedval}")
+        monitor_request()
         print("\nPress Enter to return...")
         time.sleep(1)
 
@@ -104,22 +127,45 @@ def setlim():
     print(f"\n{parsedval}")
     ui.getch()
 
+def merge():
+    ui.header("ADMIN")
+    mergeFile = input("Enter file to merge to current DB file: ")
+    if input("Confirm merge this file to current DB (Y/N): ").capitalize() == "Y":
+        ui.header("ADMIN")
+        print(f"Merging {mergeFile} to DB...")
+        merge_threads = []
+        with open(mergeFile, 'r') as mf:
+            lines = mf.readlines()
+            for l in lines:
+                t = threading.Thread(target=add_service, args=(l, True))
+                merge_threads.append(t)
+            for t in merge_threads:
+                t.start()
+            for t in merge_threads:
+                t.join()
+    ui.header("ADMIN")
+    monitor_request()
+    ui.getch()
+    return
+
 def menu():
     ret = True
     global IP, PORT
     ui.header("ADMIN")
     print(f"Server: {IP}:{PORT}")
-    print("1 - ADD\n2 - REMOVE\n3 - MONITOR\n4 - SEARCH\n5 - SET LIMIT\n0 - EXIT")
+    print("1 - ADD\n2 - REMOVE\n3 - MERGE\n4 - MONITOR\n5 - SEARCH\n6 - SET LIMIT\n0 - EXIT")
     choice = input("Enter choice: ")
     if choice == "1":
         add()
     elif choice == "2":
         remove()
     elif choice == "3":
-        monitor()
+        merge()
     elif choice == "4":
-        search()
+        monitor()
     elif choice == "5":
+        search()
+    elif choice == "6":
         setlim()
     elif choice == "0":
         ret = False

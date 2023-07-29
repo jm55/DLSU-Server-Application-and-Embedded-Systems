@@ -25,5 +25,5 @@ def cleanresponse(response:str):
             parsedval = "ERROR OCCURED"
     return parsedval
 
-def errjson(dev_id:str):
-    return writejson(dev_id,"ERR","ERROR")
+def errjson(dev_id:str, cause:str):
+    return writejson(dev_id,"ERR",cause)

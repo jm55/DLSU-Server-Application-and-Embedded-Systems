@@ -17,7 +17,7 @@ ADDR = ("", 0)
 QUIET = False
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-lock = threading.Lock()
+lock = threading.Semaphore(200)
 
 RFID_SIZE = 1000
 RFID_LIST = []
@@ -65,8 +65,10 @@ def generate_devid():
 def send(msg):
     jsonstring = jparser.writejson("DEV_ID", "TAP", msg)
     message = jsonstring.encode(FORMAT)
+    lock.acquire()
     client.send(message)
-    server_reply = client.recv(2048).decode(FORMAT)
+    server_reply = client.recv(HEADER).decode(FORMAT)
+    lock.release()
     return server_reply #Replies from server
 
 def client_worker(thread_id): #For Simulator Only
@@ -77,8 +79,10 @@ def client_worker(thread_id): #For Simulator Only
         ret = send(id)
         parsedval = jparser.cleanresponse(ret)
         if not QUIET:
-            print(f"{str(datetime.datetime.now()):26s} | [Thread ID {str(thread_id):4s}]: {id:32s} - {parsedval:5s} ({round(time.time()-start,2)}ms)")
-        #time.sleep(random.randint(1,TIME_LIMIT)) #arbitrary sleep to simulate delay to next possible tap of same id
+            ui.standardPrint(["Thread " + str(thread_id)], "", id, parsedval, f"({round(time.time()-start,2)}ms)")
+            #print(f"{str(datetime.datetime.now()):26s} [Thread ID {str(thread_id):4s}]: {id:32s} - {parsedval:5s} ({round(time.time()-start,2)}ms)")
+        if "Unparsable" in parsedval or "Malformed" in parsedval: 
+            time.sleep(random.randint(1,TIME_LIMIT)) #slow down the thread
 
 def main():
     global QUIET
@@ -92,7 +96,7 @@ def main():
     for t in range(threads):
         thread = threading.Thread(target=client_worker, args=([t]))
         thread.start()
-        #add delay
+        time.sleep(250/1000)
 
 if __name__ == "__main__":
     main()

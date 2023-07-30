@@ -15,9 +15,11 @@ IP = ""
 PORT = 8080
 ADDR = ("", 0)
 QUIET = False
+LATENCY_TOTAL = 0
+LATENCY_CTR = 0
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-lock = threading.Semaphore(200)
+lock = threading.Semaphore(205)
 
 RFID_SIZE = 1000
 RFID_LIST = []
@@ -73,19 +75,28 @@ def send(msg):
 
 def client_worker(thread_id): #For Simulator Only
     global QUIET
+    global LATENCY_TOTAL
+    global LATENCY_CTR
     while True:
         id = random_id()
         start = time.time()
         ret = send(id)
         parsedval = jparser.cleanresponse(ret)
+        latency = round(time.time()-start,2)
+        lock.acquire()
+        LATENCY_TOTAL += latency
+        LATENCY_CTR += 1
+        lock.release()
         if not QUIET:
-            ui.standardPrint(["Thread " + str(thread_id)], "", id, parsedval, f"({round(time.time()-start,2)}ms)")
+            ui.standardPrint(["Thread " + str(thread_id)], "", id, parsedval, f"({latency}ms)")
             #print(f"{str(datetime.datetime.now()):26s} [Thread ID {str(thread_id):4s}]: {id:32s} - {parsedval:5s} ({round(time.time()-start,2)}ms)")
         if "Unparsable" in parsedval or "Malformed" in parsedval: 
             time.sleep(random.randint(1,TIME_LIMIT)) #slow down the thread
 
 def main():
     global QUIET
+    global LATENCY_CTR
+    global LATENCY_TOTAL
     ui.header("CLIENT")
     setup_client()
     load_ids()
@@ -93,10 +104,18 @@ def main():
     if input("Quiet Mode (Y/N): ").lower() == "y":
         QUIET = True
     client.connect(ADDR)
+    print("Running Threads...")
     for t in range(threads):
         thread = threading.Thread(target=client_worker, args=([t]))
         thread.start()
-        time.sleep(250/1000)
+        #time.sleep(100/1000)
+    while True and QUIET:
+        if LATENCY_CTR != 0:
+            ui.header("CLIENT")
+            print(f"No. of Threads: {threads}")
+            print(f"No. of Samples: {LATENCY_CTR}")
+            print(f"Average Latency: {(LATENCY_TOTAL/LATENCY_CTR):0f}ms")
+            time.sleep(1)
 
 if __name__ == "__main__":
     main()

@@ -28,9 +28,9 @@ def standardPrint(addr, cmd:str, val:str, res:str, rate:str):
     if addr == "localhost":
         addr = ["localhost", "0"]
     if cmd == "TAP":
-        print(f"{str(datetime.datetime.now()):26s} [{addr[0]:15s}]: {str(val):32s} - {res:7s} {rate}")
+        print(f"{str(datetime.datetime.now()):26s} [{addr[0]:15s}]: {str(val):32s} - {res:7s} {rate}", flush=True)
     elif cmd == "ADD" or cmd == "REMOVE":
-        print(f"{str(datetime.datetime.now()):26s} [{addr[0]:15s}]: {str(val):32s} - {res:7s} {rate}")
+        print(f"{str(datetime.datetime.now()):26s} [{addr[0]:15s}]: {str(val):32s} - {res:7s} {rate}", flush=True)
     elif cmd != "MON":
-        print(f"{str(datetime.datetime.now()):26s} [{addr[0]:15s}]: {cmd} {str(val)} - {res:7s} {rate}")
+        print(f"{str(datetime.datetime.now()):26s} [{addr[0]:15s}]: {cmd} {str(val)} - {res:7s} {rate}", flush=True)
     return

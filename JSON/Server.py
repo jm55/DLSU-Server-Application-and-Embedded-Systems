@@ -32,7 +32,7 @@ def setup_server():
     IP = input("Enter Server IP: ")
     ADDR = (IP, PORT)
     server.bind(ADDR)
-    if input("Quiet Mode (y/n): ").lower == "y":
+    if input("Quiet Mode (y/n): ").lower() == "y":
         QUIET = True
 
 def load_memory():

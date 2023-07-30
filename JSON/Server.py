@@ -17,8 +17,8 @@ IP = ""
 PORT = 8080
 ADDR = ("", 0)
 QUIET = False
-LIMIT = 1000
-DEFAULTLIMIT = 1000
+LIMIT = 100000
+DEFAULTLIMIT = 100000
 UPDATE_CYCLE = 30 #in seconds
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

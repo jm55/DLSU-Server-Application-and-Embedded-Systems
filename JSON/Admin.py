@@ -138,11 +138,14 @@ def merge():
         start = time.time()
         with open(mergeFile, 'r') as mf:
             lines = mf.readlines()
+            print("Creating threads...")
             for l in lines:
-                t = threading.Thread(target=add_service, args=(l, True))
+                t = threading.Thread(target=add_service, args=(l, False))
                 merge_threads.append(t)
+            print("Running threads...")
             for t in merge_threads:
                 t.start()
+            print("Joining threads...")
             for t in merge_threads:
                 t.join()
     ui.header("ADMIN")

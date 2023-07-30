@@ -47,6 +47,8 @@ def load_memory():
 
 def add_user(id:str):
     id = re.sub("ADD=","",id)
+    if id in dbMemory:
+        return "!ADDED"
     dbMemory.append(id)
     return "ADDED"
     

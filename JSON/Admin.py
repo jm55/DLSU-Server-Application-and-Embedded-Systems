@@ -130,10 +130,12 @@ def setlim():
 def merge():
     ui.header("ADMIN")
     mergeFile = input("Enter file to merge to current DB file: ")
+    start = 0
     if input("Confirm merge this file to current DB (Y/N): ").capitalize() == "Y":
         ui.header("ADMIN")
         print(f"Merging {mergeFile} to DB...")
         merge_threads = []
+        start = time.time()
         with open(mergeFile, 'r') as mf:
             lines = mf.readlines()
             for l in lines:
@@ -144,6 +146,7 @@ def merge():
             for t in merge_threads:
                 t.join()
     ui.header("ADMIN")
+    print(f"Time taken: {time.time()-start}s")
     monitor_request()
     ui.getch()
     return

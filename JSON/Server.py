@@ -47,11 +47,8 @@ def load_memory():
 
 def add_user(id:str):
     id = re.sub("ADD=","",id)
-    if id in dbMemory:
-        return "!ADDED"
-    else:
-        dbMemory.append(id)
-        return "ADDED"
+    dbMemory.append(id)
+    return "ADDED"
     
 def rem_user(id:str):
     id = re.sub("REM=","",id)
@@ -151,6 +148,7 @@ def update_db():
             ui.standardPrint("localhost", "UDB", "Updating DB File...", "ONGOING", "")
             try:
                 lock.acquire()
+                dbMemory = list(dict.fromkeys(dbMemory))
                 f = open(FILE, mode="w")
                 for id in dbMemory:
                     f.write(id + "\n")

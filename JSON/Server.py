@@ -142,6 +142,7 @@ def handle_client(conn, addr):
 def update_db():
     global LASTUPDATE
     global FILE
+    global dbMemory
     LASTUPDATE = time.time()
     while True:
         if time.time() - LASTUPDATE >= UPDATE_CYCLE:

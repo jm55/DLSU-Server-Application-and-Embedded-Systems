@@ -143,6 +143,7 @@ def merge():
             lines = mf.readlines()
             ui.header("ADMIN")
             for ctr in range(len(lines)):
+                add_service(lines[ctr],False)
                 ui.header("ADMIN")
                 print(f"{ctr}/{len(lines)} ({((ctr/len(lines))*100):.2f}%) Completed")
                 

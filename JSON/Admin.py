@@ -18,9 +18,8 @@ RFID_SIZE = 1000
 RFID_LIST = []
 TIME_LIMIT = 10
 
-lock = None
-
-MERGED = 0
+lock = threading.Lock()
+MERGE_LIMITS = 0
 
 def setup_client():
     global IP, PORT, ADDR
@@ -127,6 +126,13 @@ def setlim():
     print(f"\n{parsedval}")
     ui.getch()
 
+def removeFinished(threads:list):
+    lock.acquire()
+    for t in threads:
+        if not t.is_alive():
+            threads.remove(t)
+    lock.release()
+
 def merge():
     ui.header("ADMIN")
     mergeFile = input("Enter file to merge to current DB file: ")
@@ -138,18 +144,12 @@ def merge():
         start = time.time()
         with open(mergeFile, 'r') as mf:
             lines = mf.readlines()
-            print("Creating threads...")
-            for l in lines:
-                t = threading.Thread(target=add_service, args=(l, False))
-                merge_threads.append(t)
-            print("Running threads...")
-            for t in merge_threads:
-                t.start()
-            print("Joining threads...")
-            for t in merge_threads:
-                t.join()
+            for ctr in range(len(lines)):
+                add_service(lines[ctr], False)
+                ui.header("ADMIN")
+                print(f"{ctr}/{len(lines)} ({((ctr/len(lines))*100):.2f}%) Completed")
     ui.header("ADMIN")
-    print(f"Time taken: {time.time()-start}s")
+    print(f"Time taken: {(time.time()-start):.2f}s")
     monitor_request()
     ui.getch()
     return

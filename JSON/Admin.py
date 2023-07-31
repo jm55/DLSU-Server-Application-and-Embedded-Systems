@@ -143,9 +143,9 @@ def merge():
             lines = mf.readlines()
             ui.header("ADMIN")
             for ctr in range(len(lines)):
-                add_service(lines[ctr],False)
-                print(f"{ctr}/{len(lines)} ({((ctr/len(lines))*100):.2f}%) Completed")
                 ui.header("ADMIN")
+                print(f"{ctr}/{len(lines)} ({((ctr/len(lines))*100):.2f}%) Completed")
+                
     ui.header("ADMIN")
     print(f"Time taken: {(time.time()-start):.2f}s")
     monitor_request()

@@ -50,7 +50,6 @@ def add_service(id, printable:bool):
     response = send(msg)
     if printable:
         print(f"ID: {id} - {jparser.cleanresponse(response)}")
-
     return jparser.cleanresponse(response)
 
 def add():
@@ -139,15 +138,14 @@ def merge():
     start = 0
     if input("Confirm merge this file to current DB (Y/N): ").capitalize() == "Y":
         ui.header("ADMIN")
-        print(f"Merging {mergeFile} to DB...")
-        merge_threads = []
         start = time.time()
         with open(mergeFile, 'r') as mf:
             lines = mf.readlines()
+            ui.header("ADMIN")
             for ctr in range(len(lines)):
-                add_service(lines[ctr], False)
-                ui.header("ADMIN")
+                add_service(lines[ctr],False)
                 print(f"{ctr}/{len(lines)} ({((ctr/len(lines))*100):.2f}%) Completed")
+                ui.header("ADMIN")
     ui.header("ADMIN")
     print(f"Time taken: {(time.time()-start):.2f}s")
     monitor_request()

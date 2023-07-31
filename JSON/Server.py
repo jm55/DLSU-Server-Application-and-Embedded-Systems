@@ -150,17 +150,17 @@ def update_db():
         if time.time() - LASTUPDATE >= UPDATE_CYCLE:
             ui.standardPrint("localhost", "UDB", "Updating DB File...", "ONGOING", "")
             try:
+                f = open(FILE, mode="w")
                 lock.acquire()
                 dbMemory = list(dict.fromkeys(dbMemory))
-                f = open(FILE, mode="w")
                 for id in dbMemory:
                     f.write(id + "\n")
+                lock.release()
                 f.flush()
                 f.close()
-                lock.release()
-                ui.standardPrint("localhost", "UDB", "DB File Updated!", "OK", "")
+                ui.standardPrint("localhost", "UDB", "DB File Update", "OK", "")
             except Exception as fileExcept:
-                ui.standardPrint("localhost", "UDB", "DB File Update Failed!", "NOT OK", "")
+                ui.standardPrint("localhost", "UDB", "DB File Update", "FAILED", "")
                 ui.exception("updateDB", fileExcept, "localhost")
                 continue
             LASTUPDATE = time.time()

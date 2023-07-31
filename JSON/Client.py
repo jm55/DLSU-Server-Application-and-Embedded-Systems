@@ -77,21 +77,26 @@ def client_worker(thread_id): #For Simulator Only
     global QUIET
     global LATENCY_TOTAL
     global LATENCY_CTR
+    success = False
     while True:
         id = random_id()
-        start = time.time()
-        ret = send(id)
-        parsedval = jparser.cleanresponse(ret)
-        latency = round(time.time()-start,2)
-        lock.acquire()
-        LATENCY_TOTAL += latency
-        LATENCY_CTR += 1
-        lock.release()
-        if not QUIET:
-            ui.standardPrint(["Thread " + str(thread_id)], "", id, parsedval, f"({latency}ms)")
-            #print(f"{str(datetime.datetime.now()):26s} [Thread ID {str(thread_id):4s}]: {id:32s} - {parsedval:5s} ({round(time.time()-start,2)}ms)")
-        if "Unparsable" in parsedval or "Malformed" in parsedval: 
-            time.sleep(random.randint(1,TIME_LIMIT)) #slow down the thread
+        while not success:
+            start = time.time()
+            ret = send(id)
+            parsedval = jparser.cleanresponse(ret)
+            latency = round(time.time()-start,2)
+            lock.acquire()
+            LATENCY_TOTAL += latency
+            LATENCY_CTR += 1
+            lock.release()
+            if not QUIET:
+                ui.standardPrint(["Thread " + str(thread_id)], "", id, parsedval, f"({latency}ms)")
+            '''
+            if ("unparseable" in parsedval.lower()) or ("malformed" in parsedval.lower()): 
+                time.sleep(500/1000) #slow down the thread
+            else:
+                success = True
+            '''
 
 def main():
     global QUIET

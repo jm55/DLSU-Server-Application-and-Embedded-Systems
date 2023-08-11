@@ -12,12 +12,12 @@ HEADER = 128
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT"
 IP = ""
-PORT = 8080
+PORT = 8081
 ADDR = ("", 0)
 QUIET = False
 LATENCY_TOTAL = 0
 LATENCY_CTR = 0
-EXCEPTIONS = ["11939125", "11932651"] #List IDs that will be exempted from random ID selector
+EXCEPTIONS = ["11939125", "11932651", "abcd", "038fd0a6", "b3af34ad"] #List IDs that will be exempted from random ID selector
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 lock = threading.Semaphore(205)

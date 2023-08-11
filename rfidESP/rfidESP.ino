@@ -29,10 +29,10 @@ String content = "";
 String dev_id = "ESP_0";
 
 
-char* ssid = "rip bozo";
-char* password = "crackhead";
-char* server = "192.168.0.107";
-const uint16_t port = 8080;
+char* ssid = "NSAPDEV";
+char* password = "12345678";
+char* server = "192.168.1.35";
+const uint16_t port = 8081;
 bool serverFlag = false;
 
 

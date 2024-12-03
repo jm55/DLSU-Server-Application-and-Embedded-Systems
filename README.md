@@ -1,4 +1,4 @@
-# NSAPDEV-NSEMBED - Final-Proj
+# Server Application and Embedded Systems Final Project
  
 ## Project Description
 
